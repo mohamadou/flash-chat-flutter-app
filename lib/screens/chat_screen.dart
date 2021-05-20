@@ -1,5 +1,12 @@
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flash_chat_flutter_app/services/messages_services.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flash_chat_flutter_app/constants.dart';
 
 class ChatScreen extends StatefulWidget {
   static final String id = 'chat_screen';
@@ -9,8 +16,43 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  User loggedInUser;
+  MessagesService messageServices = MessagesService();
+  String message;
+  var _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    try {
+      _auth.authStateChanges().listen((User user) {
+        if (user != null) {
+          loggedInUser = user;
+          print(loggedInUser);
+        }
+      });
+
+      /* final User user = _auth.currentUser;
+      print('User: $user');
+      if (user != null) {
+        loggedInUser = user;
+        print(loggedInUser.email);
+      }*/
+
+    } on Exception catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    getCurrentUser();
     return Scaffold(
       appBar: AppBar(
         leading: null,
@@ -18,7 +60,8 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                //Implement logout functionality
+                _auth.signOut();
+                Navigator.pop(context);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -29,6 +72,9 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            Expanded(
+              child: messageServices.getMessages(loggedInUser: loggedInUser),
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -36,15 +82,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
+                      controller: _textEditingController,
                       onChanged: (value) {
-                        //Do something with the user input.
+                        message = value;
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      //Implement send functionality.
+                    onPressed: () async {
+                      try {
+                        await messageServices.sendMessage(
+                            message: message, sender: loggedInUser.email);
+                        _textEditingController.clear();
+                      } on Exception catch (e) {
+                        print(e);
+                      }
                     },
                     child: Text(
                       'Send',

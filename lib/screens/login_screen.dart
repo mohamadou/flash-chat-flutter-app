@@ -1,5 +1,8 @@
+import 'package:flash_chat_flutter_app/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_flutter_app/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 
 class LoginScreen extends StatefulWidget {
   static final String id = 'login_screen';
@@ -8,6 +11,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  String email;
+  String password;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void dispose() {
+    super.dispose();
+    Loader.hide();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,18 +39,20 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 48.0,
             ),
             TextField(
+              keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
-                //Do something with the user input.
+                email = value;
               },
-              decoration: kInputTextDecoration.copyWith(
-                  hintText: 'Enter your username'),
+              decoration:
+                  kInputTextDecoration.copyWith(hintText: 'Enter your email'),
             ),
             SizedBox(
               height: 8.0,
             ),
             TextField(
+              obscureText: true,
               onChanged: (value) {
-                //Do something with the user input.
+                password = value;
               },
               decoration: kInputTextDecoration.copyWith(
                   hintText: 'Enter your password'),
@@ -52,8 +67,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
                 elevation: 5.0,
                 child: MaterialButton(
-                  onPressed: () {
-                    //Implement login functionality.
+                  onPressed: () async {
+                    /*Loader.show(context,
+                        progressIndicator: LinearProgressIndicator());*/
+                    Loader.show(context,
+                        isAppbarOverlay: true,
+                        isBottomBarOverlay: false,
+                        progressIndicator: CircularProgressIndicator(),
+                        themeData: Theme.of(context)
+                            .copyWith(accentColor: Colors.black38),
+                        overlayColor: Color(0x99E8EAF6));
+                    try {
+                      UserCredential userCredential =
+                          await _auth.signInWithEmailAndPassword(
+                              email: email, password: password);
+
+                      if (userCredential != null) {
+                        Navigator.pushNamed(context, ChatScreen.id);
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
+                    Loader.hide();
                   },
                   minWidth: 200.0,
                   height: 42.0,

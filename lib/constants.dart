@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bubble/bubble.dart';
 
 const kSendButtonTextStyle = TextStyle(
   color: Colors.lightBlueAccent,
@@ -32,4 +33,25 @@ const kInputTextDecoration = InputDecoration(
     borderSide: BorderSide(color: Colors.blueAccent, width: 2.0),
     borderRadius: BorderRadius.all(Radius.circular(32.0)),
   ),
+);
+
+const kStyleSomebody = BubbleStyle(
+  nip: BubbleNip.leftCenter,
+  color: Colors.white,
+  borderColor: Colors.blue,
+  borderWidth: 1,
+  elevation: 4,
+  margin: BubbleEdges.only(top: 8, right: 50),
+  alignment: Alignment.topLeft,
+);
+
+const kStyleMe = BubbleStyle(
+  nip: BubbleNip.rightCenter,
+  // color: Color.fromARGB(255, 225, 255, 199),
+  color: Colors.lightBlueAccent,
+  // borderColor: Colors.blue,
+  borderWidth: 1,
+  elevation: 4,
+  margin: BubbleEdges.only(top: 8, left: 50),
+  alignment: Alignment.topRight,
 );
