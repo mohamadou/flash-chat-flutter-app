@@ -92,9 +92,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   TextButton(
                     onPressed: () async {
                       try {
-                        await messageServices.sendMessage(
-                            message: message, sender: loggedInUser.email);
-                        _textEditingController.clear();
+                        if (message != null) {
+                          await messageServices.sendMessage(
+                              message: message, sender: loggedInUser.email);
+                          _textEditingController.clear();
+                          message = null;
+                        }
                       } on Exception catch (e) {
                         print(e);
                       }
