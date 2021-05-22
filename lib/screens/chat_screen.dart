@@ -18,9 +18,9 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  User loggedInUser;
   MessagesService messageServices = MessagesService();
-  String message;
+  late String? message;
+  late User loggedInUser;
   var _textEditingController = TextEditingController();
 
   @override
@@ -31,20 +31,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void getCurrentUser() async {
     try {
-      _auth.authStateChanges().listen((User user) {
+      /*_auth.authStateChanges().listen((User? user) {
         if (user != null) {
           loggedInUser = user;
-          print(loggedInUser);
         }
-      });
+      });*/
 
-      /* final User user = _auth.currentUser;
+      final User? user = _auth.currentUser;
       print('User: $user');
       if (user != null) {
         loggedInUser = user;
         print(loggedInUser.email);
-      }*/
-
+      }
     } on Exception catch (e) {
       print(e);
     }

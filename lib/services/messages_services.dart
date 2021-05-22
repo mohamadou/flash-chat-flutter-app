@@ -6,9 +6,7 @@ import 'package:flash_chat_flutter_app/constants.dart';
 import 'package:bubble/bubble.dart';
 
 class MessagesService {
-  String message;
-  String sender;
-  User currentUser;
+  User? currentUser;
 
   CollectionReference _messagesCollection =
       FirebaseFirestore.instance.collection('messages');
@@ -24,7 +22,7 @@ class MessagesService {
         .catchError((onError) => print('Failed to add the message : $onError'));
   }
 
-  StreamBuilder<QuerySnapshot> getMessages({loggedInUser}) {
+  StreamBuilder<QuerySnapshot> getMessages({User? loggedInUser}) {
     currentUser = loggedInUser;
     return StreamBuilder<QuerySnapshot>(
         stream: _messagesCollection
@@ -37,31 +35,42 @@ class MessagesService {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Text('Loading');
           }
-          return ListView(
-            padding: EdgeInsets.symmetric(vertical: 15.0),
-            reverse: true,
-            children: snapshot.data.docs.map((DocumentSnapshot document) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-                child: Column(
-                  children: [
-                    Bubble(
-                      child: Padding(
-                        padding: EdgeInsets.all(3.0),
-                        child: Text(
-                          document['message'],
-                          style: TextStyle(fontSize: 16.0),
+          if (loggedInUser == null) {
+            return Text("No message");
+          }
+          if (!snapshot.hasData) {
+            return Text('');
+          }
+
+          if (snapshot.data != null) {
+            return ListView(
+              padding: EdgeInsets.symmetric(vertical: 15.0),
+              reverse: true,
+              children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                return Padding(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+                  child: Column(
+                    children: [
+                      Bubble(
+                        child: Padding(
+                          padding: EdgeInsets.all(3.0),
+                          child: Text(
+                            document['message'],
+                            style: TextStyle(fontSize: 16.0),
+                          ),
                         ),
+                        style: loggedInUser.email == document['sender']
+                            ? kStyleMe
+                            : kStyleSomebody,
                       ),
-                      style: loggedInUser.email == document['sender']
-                          ? kStyleMe
-                          : kStyleSomebody,
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          );
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          }
+          return Text('');
         });
   }
 }
